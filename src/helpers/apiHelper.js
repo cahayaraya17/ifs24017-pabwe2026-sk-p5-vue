@@ -1,3 +1,4 @@
+const DELCOM_BASEURL = import.meta.env.VITE_DELCOM_BASEURL
 const ACCESS_TOKEN_KEY = 'accessToken'
 
 /**
