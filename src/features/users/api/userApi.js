@@ -19,6 +19,18 @@ export function uploadMyPhoto(file) {
   return fetchApi('/users/me/photo', { method: 'POST', body: formData })
 }
 
-export function changeMyPassword(payload) {
-  return fetchApi('/users/me/password', { method: 'PUT', body: payload })
+/**
+ * PUT /users/password
+ * Menerima { currentPassword, newPassword } dari halaman profil, lalu
+ * mengubahnya ke nama field yang diminta API Delcom.
+ */
+export function changeMyPassword({ currentPassword, newPassword }) {
+  return fetchApi('/users/password', {
+    method: 'PUT',
+    body: {
+      password: currentPassword,
+      new_password: newPassword,
+      new_password_confirmation: newPassword,
+    },
+  })
 }
