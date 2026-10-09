@@ -1,104 +1,46 @@
 import { fetchApi } from '../../../helpers/apiHelper'
 
 /**
- * GET /aucations
- *
- * Mengambil daftar lelang.
- *
- * @param {Object} options
- * @param {boolean} options.is_me - Hanya lelang milik user
- * @param {boolean} options.is_closed - Hanya lelang yang sudah ditutup
+ * Mengambil daftar lelang
+ * Mendukung query params: is_me, is_closed, dll.
  */
-export function getAucations({ is_me, is_closed } = {}) {
-  return fetchApi('/aucations', {
-    method: 'GET',
-    params: {
-      is_me,
-      is_closed,
-    },
-  })
+export function getAucations(params = {}) {
+  return fetchApi('/aucations', { params })
 }
 
 /**
- * GET /aucations/:id
- *
- * Mengambil detail satu lelang.
- *
- * @param {string|number} id
+ * Mengambil detail lengkap item lelang berdasarkan ID
  */
-export function getAucation(id) {
-  return fetchApi(`/aucations/${id}`, {
-    method: 'GET',
-  })
+export function getAucationById(id) {
+  return fetchApi(`/aucations/${id}`)
 }
 
 /**
- * POST /aucations
- *
- * Membuat lelang baru.
- *
- * @param {Object} payload
- * @param {string} payload.title
- * @param {string} payload.description
- * @param {number} payload.start_bid
- * @param {string} payload.closed_at
+ * Menambahkan lelang barang baru
+ * payload: { title, description, start_bid, closed_at }
  */
-export function addAucation({
-  title,
-  description,
-  start_bid,
-  closed_at,
-}) {
+export function addAucation(payload) {
   return fetchApi('/aucations', {
     method: 'POST',
-    body: {
-      title,
-      description,
-      start_bid,
-      closed_at,
-    },
+    body: payload,
   })
 }
 
 /**
- * PUT /aucations/:id
- *
- * Mengubah data lelang.
- *
- * @param {string|number} id
- * @param {Object} payload
+ * Memperbarui data lelang
  */
-export function changeAucation(
-  id,
-  {
-    title,
-    description,
-    start_bid,
-    closed_at,
-  },
-) {
+export function updateAucation(id, payload) {
   return fetchApi(`/aucations/${id}`, {
     method: 'PUT',
-    body: {
-      title,
-      description,
-      start_bid,
-      closed_at,
-    },
+    body: payload,
   })
 }
 
 /**
- * POST /aucations/:id/cover
- *
- * Mengunggah / mengganti cover lelang.
- *
- * @param {string|number} id
- * @param {File} file
+ * Mengunggah/mengganti foto cover barang lelang
  */
-export function changeAucationCover(id, file) {
+export function uploadAucationCover(id, file) {
   const formData = new FormData()
-
   formData.append('cover', file)
 
   return fetchApi(`/aucations/${id}/cover`, {
@@ -108,11 +50,7 @@ export function changeAucationCover(id, file) {
 }
 
 /**
- * DELETE /aucations/:id
- *
- * Menghapus satu lelang.
- *
- * @param {string|number} id
+ * Menghapus item lelang berdasarkan ID
  */
 export function deleteAucation(id) {
   return fetchApi(`/aucations/${id}`, {
@@ -121,28 +59,18 @@ export function deleteAucation(id) {
 }
 
 /**
- * POST /aucations/:id/bids
- *
- * Mengajukan penawaran / bid.
- *
- * @param {string|number} id
- * @param {number} bid
+ * Mengajukan tawaran lelang / bid
+ * payload: { bid }
  */
-export function addBid(id, bid) {
+export function addBid(id, payload) {
   return fetchApi(`/aucations/${id}/bids`, {
     method: 'POST',
-    body: {
-      bid,
-    },
+    body: payload,
   })
 }
 
 /**
- * DELETE /aucations/:id/bids
- *
- * Membatalkan / menghapus tawaran milik user.
- *
- * @param {string|number} id
+ * Membatalkan/menghapus tawaran lelang
  */
 export function deleteBid(id) {
   return fetchApi(`/aucations/${id}/bids`, {
@@ -151,9 +79,7 @@ export function deleteBid(id) {
 }
 
 /**
- * DELETE /aucations
- *
- * Menghapus seluruh lelang milik user.
+ * Menghapus seluruh item lelang milik pengguna
  */
 export function deleteAllAucations() {
   return fetchApi('/aucations', {
