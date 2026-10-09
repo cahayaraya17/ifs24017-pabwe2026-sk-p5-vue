@@ -141,7 +141,7 @@ async function handleAddSubmit(payload) {
           <div v-else class="no-cover">Tidak ada cover</div>
         </div>
         <div class="card-body">
-          <h4 class="card-title">{{ item.title }}</h4>
+          <h2 class="card-title">{{ item.title }}</h2>
           <p class="card-desc">{{ item.description }}</p>
           <div class="card-meta">
             <div>
