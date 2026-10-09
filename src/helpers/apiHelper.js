@@ -1,4 +1,4 @@
-const DELCOM_BASEURL = import.meta.env.VITE_DELCOM_BASEURL
+const DELCOM_BASEURL = import.meta.env.VITE_DELCOM_BASEURL || 'https://open-api.delcom.org/api/v1'
 const ACCESS_TOKEN_KEY = 'accessToken'
 
 /**
