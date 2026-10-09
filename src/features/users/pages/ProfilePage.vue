@@ -69,7 +69,7 @@ async function handleChangePassword() {
           alt="Foto profil"
           class="h-24 w-24 rounded-full object-cover"
         />
-        <input type="file" accept="image/*" :disabled="usersStore.isPhotoUploading" @change="handleUploadPhoto" />
+        <input id="profile-avatar-input" type="file" accept="image/*" aria-label="Unggah foto profil" :disabled="usersStore.isPhotoUploading" @change="handleUploadPhoto" />
         <p v-if="usersStore.isPhotoUploading" class="text-sm text-gray-500">Mengunggah...</p>
         <p v-if="photoMessage" class="text-sm">{{ photoMessage }}</p>
       </section>
