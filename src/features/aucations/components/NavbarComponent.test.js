@@ -1,51 +1,45 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import NavbarComponent from './NavbarComponent.vue'
+import * as apiHelper from '../../../helpers/apiHelper'
 
 const mockPush = vi.fn()
 vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+  useRouter: () => ({ push: mockPush }),
 }))
 
 describe('NavbarComponent.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
   })
 
-  it('menampilkan elemen brand Delcom Auction', () => {
+  it('merender link brand dan navigasi dengan benar', () => {
     const wrapper = mount(NavbarComponent, {
       global: {
         stubs: {
-          'router-link': {
-            template: '<a><slot /></a>',
-          },
+          RouterLink: { template: '<a><slot /></a>' },
         },
       },
     })
 
     expect(wrapper.text()).toContain('Delcom Auction')
+    expect(wrapper.text()).toContain('Profil')
+    expect(wrapper.text()).toContain('Keluar')
   })
 
-  it('menghapus token dan mengarahkan ke login saat tombol Keluar diklik', async () => {
-    localStorage.setItem('token', 'sample-token-123')
-
+  it('menjalankan proses logout dan berpindah ke /login saat tombol Keluar diklik', async () => {
+    const removeTokenSpy = vi.spyOn(apiHelper, 'removeAccessToken')
     const wrapper = mount(NavbarComponent, {
       global: {
         stubs: {
-          'router-link': {
-            template: '<a><slot /></a>',
-          },
+          RouterLink: { template: '<a><slot /></a>' },
         },
       },
     })
 
-    const logoutButton = wrapper.find('button.btn-logout')
-    await logoutButton.trigger('click')
+    await wrapper.find('.btn-logout').trigger('click')
 
-    expect(localStorage.getItem('token')).toBeNull()
-    expect(mockPush).toHaveBeenCalledWith('/auth/login')
+    expect(removeTokenSpy).toHaveBeenCalled()
+    expect(mockPush).toHaveBeenCalledWith('/login')
   })
 })

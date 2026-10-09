@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { removeAccessToken } from '../../../helpers/apiHelper'
 
 const router = useRouter()
 
 function handleLogout() {
+  removeAccessToken()
   localStorage.removeItem('token')
   localStorage.removeItem('user')
-  router.push('/auth/login')
+  router.push('/login')
 }
 </script>
 
