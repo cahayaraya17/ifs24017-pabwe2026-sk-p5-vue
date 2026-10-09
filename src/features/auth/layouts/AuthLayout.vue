@@ -39,7 +39,7 @@ defineProps({
           Delcom Auction
         </div>
 
-        <h1 class="text-2xl font-bold text-slate-900">{{ title }}</h1>
+        <h1 class="text-2xl font-bold text-slate-900" aria-label="Profil Pengguna">{{ title }}</h1>
         <p v-if="subtitle" class="mt-1 text-sm text-slate-500">{{ subtitle }}</p>
 
         <div class="mt-6">
