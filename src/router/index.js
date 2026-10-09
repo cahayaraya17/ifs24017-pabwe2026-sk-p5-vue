@@ -5,7 +5,6 @@ const routes = [
   {
     path: '/',
     component: () => import('../features/aucations/layouts/AucationLayout.vue'),
-    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -55,10 +54,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = getAccessToken()
-
-  if (to.meta.requiresAuth && !token) {
-    return next({ name: 'login' })
-  }
 
   if (to.meta.guestOnly && token) {
     return next({ path: '/' })
