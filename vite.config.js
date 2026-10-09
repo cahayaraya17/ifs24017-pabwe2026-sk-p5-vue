@@ -1,39 +1,38 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    tailwindcss()
-  ],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.js',
-    pool: 'threads',
-    threads: {
-      singleThread: true,
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: [
         'src/App.vue',
-        'src/router.js',
-        'src/features/auth/api/authApi.js',
-        'src/features/auth/layouts/AuthLayout.vue',
-        'src/features/auth/pages/LoginPage.vue',
-        'src/features/auth/pages/RegisterPage.vue',
-        'src/features/auth/states/authStore.js',
-        'src/features/common/pages/NotFoundPage.vue'
+        'src/features/auth/**',
+        'src/features/common/**',
+      ],
+      exclude: [
+        'src/main.js',
+        'src/router/**',
+        'src/helpers/**',
+        'src/hooks/**',
+        '**/*.test.js',
       ],
       thresholds: {
         lines: 100,
         functions: 100,
         branches: 100,
-        statements: 100
-      }
+        statements: 100,
+      },
     },
   },
 })

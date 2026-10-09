@@ -81,6 +81,20 @@ describe('LoginPage.vue', () => {
     expect(mockPush).toHaveBeenCalledWith('/')
   })
 
+  it('submit sukses tanpa message: menggunakan fallback pesan default', async () => {
+    const wrapper = createWrapper()
+    vi.spyOn(authStore, 'login').mockResolvedValueOnce({
+      status: 'success',
+      message: '',
+    })
+
+    await wrapper.find('#login-email-input').setValue('user@delcom.org')
+    await wrapper.find('#login-password-input').setValue('password123')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(toolsHelper.showSuccessDialog).toHaveBeenCalledWith('Login berhasil')
+  })
+
   it('submit gagal dari server: menampilkan dialog error dengan pesan server', async () => {
     const wrapper = createWrapper()
     vi.spyOn(authStore, 'login').mockResolvedValueOnce({
@@ -93,6 +107,19 @@ describe('LoginPage.vue', () => {
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Kredensial tidak valid')
+  })
+
+  it('submit gagal tanpa message: menggunakan fallback pesan Login gagal', async () => {
+    const wrapper = createWrapper()
+    vi.spyOn(authStore, 'login').mockResolvedValueOnce({
+      status: 'error',
+    })
+
+    await wrapper.find('#login-email-input').setValue('user@delcom.org')
+    await wrapper.find('#login-password-input').setValue('password123')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Login gagal')
   })
 
   it('submit error exception: menangani blok catch', async () => {
