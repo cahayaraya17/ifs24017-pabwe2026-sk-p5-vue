@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAucationsStore } from '../states/aucationsStore'
 import MarkdownViewer from '../components/MarkdownViewer.vue'
@@ -15,10 +15,12 @@ const showChangeModal = ref(false)
 const showCoverModal = ref(false)
 const showBidModal = ref(false)
 
-const aucationId = route.params.aucationId
+const aucationId = computed(() => route.params.id || route.params.aucationId)
 
 async function loadDetail() {
-  await aucationsStore.fetchAucationById(aucationId)
+  if (aucationId.value) {
+    await aucationsStore.fetchAucationById(aucationId.value)
+  }
 }
 
 onMounted(() => {
@@ -27,7 +29,7 @@ onMounted(() => {
 
 async function handleChangeSubmit(payload) {
   try {
-    await aucationsStore.updateAucation(aucationId, payload)
+    await aucationsStore.updateAucation(aucationId.value, payload)
     showChangeModal.value = false
     await loadDetail()
   } catch (err) {
@@ -37,7 +39,7 @@ async function handleChangeSubmit(payload) {
 
 async function handleCoverSubmit(file) {
   try {
-    await aucationsStore.uploadAucationCover(aucationId, file)
+    await aucationsStore.uploadAucationCover(aucationId.value, file)
     showCoverModal.value = false
     await loadDetail()
   } catch (err) {
@@ -47,7 +49,7 @@ async function handleCoverSubmit(file) {
 
 async function handleBidSubmit(payload) {
   try {
-    await aucationsStore.addBid(aucationId, payload)
+    await aucationsStore.addBid(aucationId.value, payload)
     showBidModal.value = false
     await loadDetail()
   } catch (err) {
@@ -58,7 +60,7 @@ async function handleBidSubmit(payload) {
 async function handleDelete() {
   if (confirm('Yakin ingin menghapus item lelang ini?')) {
     try {
-      await aucationsStore.deleteAucation(aucationId)
+      await aucationsStore.deleteAucation(aucationId.value)
       router.push('/')
     } catch (err) {
       alert(err?.message || 'Gagal menghapus lelang')
@@ -68,71 +70,83 @@ async function handleDelete() {
 </script>
 
 <template>
-  <div v-if="aucationsStore.isAucation" class="loading">
+  <div v-if="aucationsStore.isAucation" class="p-8 text-center text-slate-500">
     Memuat detail lelang...
   </div>
 
-  <div v-else-if="aucationsStore.aucation" class="detail-container">
-    <div class="detail-header">
-      <router-link to="/" class="back-link">← Kembali ke Dashboard</router-link>
-      <div class="actions">
-        <button class="btn-action" @click="showCoverModal = true">Ganti Cover</button>
-        <button class="btn-action" @click="showChangeModal = true">Edit</button>
-        <button class="btn-danger" @click="handleDelete">Hapus</button>
+  <div v-else-if="aucationsStore.aucation" class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+      <router-link to="/" class="text-sm font-semibold text-indigo-600 hover:underline">
+        ← Kembali ke Daftar Lelang
+      </router-link>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          @click="showCoverModal = true"
+        >
+          Ganti Cover
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          @click="showChangeModal = true"
+        >
+          Edit Info
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+          @click="handleDelete"
+        >
+          Hapus
+        </button>
       </div>
     </div>
 
-    <div class="content-layout">
-      <!-- Info Utama -->
-      <div class="main-info">
-        <div class="cover-wrapper">
-          <img
-            v-if="aucationsStore.aucation.cover"
-            :src="aucationsStore.aucation.cover"
-            alt="Cover"
-          />
-          <div v-else class="no-cover">Belum ada cover gambar</div>
-        </div>
-
-        <h2>{{ aucationsStore.aucation.title }}</h2>
-
-        <div class="description-section">
-          <h4>Deskripsi</h4>
-          <MarkdownViewer :content="aucationsStore.aucation.description || ''" />
-        </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div v-if="aucationsStore.aucation.cover" class="h-64 bg-slate-100 flex items-center justify-center overflow-hidden">
+        <img :src="aucationsStore.aucation.cover" :alt="aucationsStore.aucation.title" class="w-full h-full object-cover" />
       </div>
 
-      <!-- Sisi Penawaran / Bids -->
-      <div class="bid-panel">
-        <div class="price-box">
-          <span class="label">Harga Awal</span>
-          <h3>Rp {{ Number(aucationsStore.aucation.start_bid || 0).toLocaleString() }}</h3>
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-start gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-800">{{ aucationsStore.aucation.title }}</h1>
+            <p class="text-sm text-slate-500 mt-1">Dibuat oleh {{ aucationsStore.aucation.user?.name || 'Pengguna' }}</p>
+          </div>
+          <span :class="['px-3 py-1 rounded-full text-xs font-semibold', aucationsStore.aucation.is_closed ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700']">
+            {{ aucationsStore.aucation.is_closed ? 'Ditutup' : 'Berlangsung' }}
+          </span>
         </div>
 
-        <button
-          class="btn-bid"
-          :disabled="aucationsStore.aucation.is_closed"
-          @click="showBidModal = true"
-        >
-          {{ aucationsStore.aucation.is_closed ? 'Lelang Sudah Ditutup' : 'Ajukan Tawaran (Bid)' }}
-        </button>
+        <div class="prose max-w-none text-slate-700 pt-2">
+          <MarkdownViewer :content="aucationsStore.aucation.description || 'Tidak ada deskripsi.'" />
+        </div>
 
-        <div class="history-section">
-          <h4>Histori Penawaran</h4>
-          <ul
-            v-if="aucationsStore.aucation.bids && aucationsStore.aucation.bids.length > 0"
-            class="bid-list"
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-sm">
+          <div>
+            <span class="text-slate-500 block">Tawaran Awal:</span>
+            <strong class="text-base text-slate-800">Rp {{ Number(aucationsStore.aucation.start_bid || 0).toLocaleString() }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Penawaran Tertinggi:</span>
+            <strong class="text-base text-indigo-600">Rp {{ Number(aucationsStore.aucation.highest_bid || aucationsStore.aucation.start_bid || 0).toLocaleString() }}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Batas Waktu:</span>
+            <strong class="text-slate-800">{{ aucationsStore.aucation.closed_at ? new Date(aucationsStore.aucation.closed_at).toLocaleString() : '-' }}</strong>
+          </div>
+        </div>
+
+        <div v-if="!aucationsStore.aucation.is_closed" class="pt-4">
+          <button
+            type="button"
+            class="w-full sm:w-auto rounded-lg bg-indigo-600 px-6 py-2.5 font-semibold text-white hover:bg-indigo-700 transition"
+            @click="showBidModal = true"
           >
-            <li
-              v-for="bid in aucationsStore.aucation.bids"
-              :key="bid.id"
-              class="bid-item"
-            >
-              <span class="bid-user">{{ bid.user?.name || 'Peserta' }}</span>
-              <strong class="bid-val">Rp {{ Number(bid.bid).toLocaleString() }}</strong>
-            </li>
-          </ul>
-          <p v-else class="empty-bid">Belum ada tawaran masuk.</p>
+            Ajukan Tawaran (Bid)
+          </button>
         </div>
       </div>
     </div>
@@ -140,8 +154,8 @@ async function handleDelete() {
     <!-- Modals -->
     <ChangeModal
       :show="showChangeModal"
-      :loading="aucationsStore.isAucationChange"
       :initial-data="aucationsStore.aucation"
+      :loading="aucationsStore.isAucationChange"
       @close="showChangeModal = false"
       @submit="handleChangeSubmit"
     />
@@ -155,129 +169,14 @@ async function handleDelete() {
 
     <BidModal
       :show="showBidModal"
+      :current-highest-bid="Number(aucationsStore.aucation.highest_bid || aucationsStore.aucation.start_bid || 0)"
       :loading="aucationsStore.isBidAdd"
-      :current-highest-bid="Number(aucationsStore.aucation.start_bid || 0)"
       @close="showBidModal = false"
       @submit="handleBidSubmit"
     />
   </div>
-</template>
 
-<style scoped>
-.detail-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.back-link {
-  color: #0284c7;
-  text-decoration: none;
-  font-weight: 500;
-}
-.actions {
-  display: flex;
-  gap: 8px;
-}
-.btn-action {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-danger {
-  background: #fee2e2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.content-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-}
-.cover-wrapper {
-  width: 100%;
-  height: 320px;
-  background-color: #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-.cover-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.main-info h2 {
-  margin: 0 0 16px 0;
-}
-.bid-panel {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.price-box {
-  background: #f8fafc;
-  padding: 12px;
-  border-radius: 6px;
-}
-.price-box .label {
-  font-size: 0.85rem;
-  color: #64748b;
-}
-.price-box h3 {
-  margin: 4px 0 0 0;
-  color: #0284c7;
-}
-.btn-bid {
-  background: #0284c7;
-  color: #fff;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-.btn-bid:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-}
-.history-section h4 {
-  margin: 0 0 12px 0;
-}
-.bid-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.bid-item {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 6px;
-  font-size: 0.9rem;
-}
-.empty-bid,
-.loading {
-  color: #64748b;
-  font-size: 0.9rem;
-}
-</style>
+  <div v-else class="p-8 text-center text-slate-500">
+    Data lelang tidak ditemukan.
+  </div>
+</template>

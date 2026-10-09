@@ -1,32 +1,70 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getAccessToken } from '../helpers/apiHelper'
-import HomePage from '../pages/HomePage.vue'
-import LoginPage from '../features/auth/pages/LoginPage.vue'
-import RegisterPage from '../features/auth/pages/RegisterPage.vue'
-import UsersPage from '../features/users/pages/UsersPage.vue'
-import ProfilePage from '../features/users/pages/ProfilePage.vue'
+
+const routes = [
+  {
+    path: '/',
+    component: () => import('../features/aucations/layouts/AucationLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'aucations-home',
+        component: () => import('../features/aucations/pages/HomePage.vue'),
+      },
+      {
+        path: 'aucations/:id',
+        name: 'aucations-detail',
+        component: () => import('../features/aucations/pages/DetailPage.vue'),
+      },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('../features/users/pages/UsersPage.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('../features/users/pages/ProfilePage.vue'),
+      },
+    ],
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../features/auth/pages/LoginPage.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('../features/auth/pages/RegisterPage.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../features/common/pages/NotFoundPage.vue'),
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    { path: '/', name: 'home', component: HomePage, meta: { requiresAuth: true } },
-    { path: '/login', name: 'login', component: LoginPage, meta: { guestOnly: true } },
-    { path: '/register', name: 'register', component: RegisterPage, meta: { guestOnly: true } },
-    { path: '/users', name: 'users', component: UsersPage, meta: { requiresAuth: true } },
-    { path: '/profile', name: 'profile', component: ProfilePage, meta: { requiresAuth: true } },
-  ],
+  routes,
 })
 
-router.beforeEach((to) => {
-  const isLoggedIn = Boolean(getAccessToken())
+router.beforeEach((to, from, next) => {
+  const token = getAccessToken()
 
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    return '/login'
+  if (to.meta.requiresAuth && !token) {
+    return next({ name: 'login' })
   }
 
-  if (to.meta.guestOnly && isLoggedIn) {
-    return '/'
+  if (to.meta.guestOnly && token) {
+    return next({ path: '/' })
   }
+
+  next()
 })
 
 export default router

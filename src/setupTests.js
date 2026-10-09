@@ -1,12 +1,9 @@
-import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
-// Mock fungsi fetch bawaan browser bila belum tersedia di environment jsdom
 if (!globalThis.fetch) {
   globalThis.fetch = vi.fn()
 }
 
-// Mock localStorage
 const localStorageMock = (() => {
   let store = {}
   return {

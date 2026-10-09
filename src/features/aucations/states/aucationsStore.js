@@ -1,15 +1,5 @@
-﻿import { defineStore } from 'pinia'
-import {
-  getAucations,
-  getAucationById,
-  addAucation,
-  updateAucation,
-  uploadAucationCover,
-  deleteAucation,
-  addBid,
-  deleteBid,
-  deleteAllAucations,
-} from '../api/aucationApi'
+import { defineStore } from 'pinia'
+import * as aucationApi from '../api/aucationApi'
 
 export const useAucationsStore = defineStore('aucations', {
   state: () => ({
@@ -21,8 +11,8 @@ export const useAucationsStore = defineStore('aucations', {
     isAucationChange: false,
     isAucationChanged: false,
     isAucationChangeCover: false,
-    isAucationDeleted: false,
     isAucationDelete: false,
+    isAucationDeleted: false,
     isBidAdd: false,
     isBidAdded: false,
     error: null,
@@ -33,8 +23,10 @@ export const useAucationsStore = defineStore('aucations', {
       this.isAucation = true
       this.error = null
       try {
-        const res = await getAucations(params)
-        this.aucations = res.data || []
+        const res = await aucationApi.getAucations(params)
+        const raw = res?.data ?? []
+        this.aucations = Array.isArray(raw) ? raw : (raw.aucations ?? [])
+        return res
       } catch (err) {
         this.error = err?.message || 'Gagal mengambil data lelang'
         throw err
@@ -47,8 +39,9 @@ export const useAucationsStore = defineStore('aucations', {
       this.isAucation = true
       this.error = null
       try {
-        const res = await getAucationById(id)
-        this.aucation = res.data || null
+        const res = await aucationApi.getAucationById(id)
+        this.aucation = res?.data?.aucation ?? res?.data ?? null
+        return res
       } catch (err) {
         this.error = err?.message || 'Gagal mengambil detail lelang'
         throw err
@@ -60,8 +53,9 @@ export const useAucationsStore = defineStore('aucations', {
     async addAucation(payload) {
       this.isAucationAdd = true
       this.isAucationAdded = false
+      this.error = null
       try {
-        const res = await addAucation(payload)
+        const res = await aucationApi.addAucation(payload)
         this.isAucationAdded = true
         return res
       } catch (err) {
@@ -75,8 +69,9 @@ export const useAucationsStore = defineStore('aucations', {
     async updateAucation(id, payload) {
       this.isAucationChange = true
       this.isAucationChanged = false
+      this.error = null
       try {
-        const res = await updateAucation(id, payload)
+        const res = await aucationApi.updateAucation(id, payload)
         this.isAucationChanged = true
         return res
       } catch (err) {
@@ -89,8 +84,9 @@ export const useAucationsStore = defineStore('aucations', {
 
     async uploadAucationCover(id, file) {
       this.isAucationChangeCover = true
+      this.error = null
       try {
-        return await uploadAucationCover(id, file)
+        return await aucationApi.uploadAucationCover(id, file)
       } catch (err) {
         this.error = err?.message || 'Gagal mengunggah cover lelang'
         throw err
@@ -102,8 +98,9 @@ export const useAucationsStore = defineStore('aucations', {
     async deleteAucation(id) {
       this.isAucationDelete = true
       this.isAucationDeleted = false
+      this.error = null
       try {
-        const res = await deleteAucation(id)
+        const res = await aucationApi.deleteAucation(id)
         this.isAucationDeleted = true
         return res
       } catch (err) {
@@ -114,11 +111,12 @@ export const useAucationsStore = defineStore('aucations', {
       }
     },
 
-    async addBid(aucationId, payload) {
+    async addBid(id, payload) {
       this.isBidAdd = true
       this.isBidAdded = false
+      this.error = null
       try {
-        const res = await addBid(aucationId, payload)
+        const res = await aucationApi.addBid(id, payload)
         this.isBidAdded = true
         return res
       } catch (err) {
@@ -129,9 +127,9 @@ export const useAucationsStore = defineStore('aucations', {
       }
     },
 
-    async deleteBid(aucationId, bidId) {
+    async deleteBid(id, bidId) {
       try {
-        return await deleteBid(aucationId, bidId)
+        return await aucationApi.deleteBid(id, bidId)
       } catch (err) {
         this.error = err?.message || 'Gagal menghapus tawaran'
         throw err
@@ -140,7 +138,7 @@ export const useAucationsStore = defineStore('aucations', {
 
     async deleteAllAucations() {
       try {
-        return await deleteAllAucations()
+        return await aucationApi.deleteAllAucations()
       } catch (err) {
         this.error = err?.message || 'Gagal menghapus semua lelang'
         throw err

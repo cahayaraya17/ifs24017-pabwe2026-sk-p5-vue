@@ -5,8 +5,11 @@ import {
   getAucationById,
   addAucation,
   updateAucation,
+  uploadAucationCover,
   deleteAucation,
   addBid,
+  deleteBid,
+  deleteAllAucations,
 } from './aucationApi'
 
 vi.mock('../../../helpers/apiHelper', () => ({
@@ -21,7 +24,6 @@ describe('aucationApi', () => {
   it('memanggil GET /aucations dengan query params', async () => {
     apiHelper.fetchApi.mockResolvedValueOnce({ data: [] })
     await getAucations({ is_me: 1 })
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations', {
       params: { is_me: 1 },
     })
@@ -30,7 +32,6 @@ describe('aucationApi', () => {
   it('memanggil GET /aucations/:id untuk detail', async () => {
     apiHelper.fetchApi.mockResolvedValueOnce({ data: { id: 10 } })
     await getAucationById(10)
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations/10')
   })
 
@@ -38,7 +39,6 @@ describe('aucationApi', () => {
     const payload = { title: 'Laptop', start_bid: 1000 }
     apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
     await addAucation(payload)
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations', {
       method: 'POST',
       body: payload,
@@ -49,17 +49,27 @@ describe('aucationApi', () => {
     const payload = { title: 'Laptop Baru' }
     apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
     await updateAucation(5, payload)
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations/5', {
       method: 'PUT',
       body: payload,
     })
   })
 
+  it('memanggil POST /aucations/:id/cover untuk mengunggah cover', async () => {
+    const dummyFile = new Blob(['dummy'], { type: 'image/png' })
+    apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
+    await uploadAucationCover(5, dummyFile)
+    expect(apiHelper.fetchApi).toHaveBeenCalledWith(
+      '/aucations/5/cover',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    )
+  })
+
   it('memanggil DELETE /aucations/:id untuk menghapus lelang', async () => {
     apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
     await deleteAucation(5)
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations/5', {
       method: 'DELETE',
     })
@@ -68,10 +78,25 @@ describe('aucationApi', () => {
   it('memanggil POST /aucations/:id/bids untuk mengajukan bid', async () => {
     apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
     await addBid(5, { bid: 50000 })
-
     expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations/5/bids', {
       method: 'POST',
       body: { bid: 50000 },
+    })
+  })
+
+  it('memanggil DELETE /aucations/:id/bids untuk membatalkan bid', async () => {
+    apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
+    await deleteBid(5)
+    expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations/5/bids', {
+      method: 'DELETE',
+    })
+  })
+
+  it('memanggil DELETE /aucations untuk menghapus seluruh lelang', async () => {
+    apiHelper.fetchApi.mockResolvedValueOnce({ status: 'success' })
+    await deleteAllAucations()
+    expect(apiHelper.fetchApi).toHaveBeenCalledWith('/aucations', {
+      method: 'DELETE',
     })
   })
 })

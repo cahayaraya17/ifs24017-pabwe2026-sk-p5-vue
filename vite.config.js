@@ -1,39 +1,39 @@
-import { defineConfig } from 'vitest/config'
-import { loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-
-  return {
-    plugins: [vue(), tailwindcss()],
-
-    server: {
-      port: Number(env.APP_PORT) || 5173,
+export default defineConfig({
+  plugins: [
+    vue(),
+    tailwindcss()
+  ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+    pool: 'threads',
+    threads: {
+      singleThread: true,
     },
-
-    define: {
-      DELCOM_BASEURL: JSON.stringify(
-        env.VITE_DELCOM_BASEURL || 'https://open-api.delcom.org/api/v1'
-      ),
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: [
+        'src/App.vue',
+        'src/router.js',
+        'src/features/auth/api/authApi.js',
+        'src/features/auth/layouts/AuthLayout.vue',
+        'src/features/auth/pages/LoginPage.vue',
+        'src/features/auth/pages/RegisterPage.vue',
+        'src/features/auth/states/authStore.js',
+        'src/features/common/pages/NotFoundPage.vue'
+      ],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100
+      }
     },
-
-    test: {
-      globals: true,
-      environment: 'jsdom',
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'html'],
-        include: ['src/**/*.{js,vue}'],
-        exclude: ['src/main.js'],
-        thresholds: {
-          lines: 100,
-          functions: 100,
-          branches: 100,
-          statements: 100,
-        },
-      },
-    },
-  }
+  },
 })
