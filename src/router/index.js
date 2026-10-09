@@ -30,12 +30,14 @@ const routes = [
   },
   {
     path: '/login',
+    alias: '/auth/login',
     name: 'login',
     component: () => import('../features/auth/pages/LoginPage.vue'),
     meta: { guestOnly: true },
   },
   {
     path: '/register',
+    alias: '/auth/register',
     name: 'register',
     component: () => import('../features/auth/pages/RegisterPage.vue'),
     meta: { guestOnly: true },

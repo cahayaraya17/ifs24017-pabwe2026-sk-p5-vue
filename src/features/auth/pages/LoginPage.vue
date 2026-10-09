@@ -1,106 +1,119 @@
 <script setup>
-import { ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthLayout from '../layouts/AuthLayout.vue'
 import { useAuthStore } from '../states/authStore'
-import { useInput } from '../../../hooks/useInput'
+import AuthLayout from '../layouts/AuthLayout.vue'
 import { showErrorDialog, showSuccessDialog } from '../../../helpers/toolsHelper'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const { value: email } = useInput('')
-const { value: password } = useInput('')
-const errors = ref({})
+const form = reactive({
+  email: '',
+  password: '',
+})
+
+const errors = reactive({
+  email: '',
+  password: '',
+})
 
 function validate() {
-  const result = {}
+  let valid = true
+  errors.email = ''
+  errors.password = ''
 
-  if (!email.value.trim()) {
-    result.email = 'Email wajib diisi'
-  } else if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
-    result.email = 'Format email tidak valid'
+  if (!form.email) {
+    errors.email = 'Email wajib diisi'
+    valid = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errors.email = 'Format email tidak valid'
+    valid = false
   }
 
-  if (!password.value) {
-    result.password = 'Kata sandi wajib diisi'
-  } else if (password.value.length < 6) {
-    result.password = 'Kata sandi minimal 6 karakter'
+  if (!form.password) {
+    errors.password = 'Kata sandi wajib diisi'
+    valid = false
+  } else if (form.password.length < 6) {
+    errors.password = 'Kata sandi minimal 6 karakter'
+    valid = false
   }
 
-  errors.value = result
-  return Object.keys(result).length === 0
+  return valid
 }
 
 async function handleSubmit() {
   if (!validate()) return
 
   try {
-    const result = await authStore.login({
-      email: email.value.trim(),
-      password: password.value,
+    const res = await authStore.login({
+      email: form.email,
+      password: form.password,
     })
 
-    if (result.status !== 'success') {
-      await showErrorDialog(result.message)
-      return
+    if (res?.status === 'success') {
+      await showSuccessDialog(res.message || 'Login berhasil')
+      router.push('/')
+    } else {
+      await showErrorDialog(res?.message || 'Login gagal')
     }
-
-    await showSuccessDialog(result.message)
-    router.push('/')
-  } catch {
+  } catch (err) {
     await showErrorDialog('Tidak dapat terhubung ke server. Coba lagi nanti.')
   }
 }
 </script>
 
 <template>
-  <AuthLayout title="Masuk" subtitle="Silakan masuk untuk mulai mengikuti lelang.">
-    <form class="space-y-4" novalidate @submit.prevent="handleSubmit">
-      <div>
-        <label for="email" class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          autocomplete="email"
-          placeholder="nama@email.com"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-          :class="{ 'border-red-500': errors.email }"
-        />
-        <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+  <AuthLayout>
+    <div class="space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900">Masuk ke Akun</h2>
+        <p class="mt-2 text-sm text-slate-600">
+          Atau
+          <router-link to="/register" class="font-medium text-indigo-600 hover:text-indigo-500">
+            daftar akun baru jika belum punya
+          </router-link>
+        </p>
       </div>
 
-      <div>
-        <label for="password" class="mb-1 block text-sm font-medium text-slate-700">
-          Kata sandi
-        </label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          autocomplete="current-password"
-          placeholder="Minimal 6 karakter"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-          :class="{ 'border-red-500': errors.password }"
-        />
-        <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
-      </div>
+      <form class="space-y-4" @submit.prevent="handleSubmit">
+        <div>
+          <label for="login-email-input" class="block text-sm font-medium text-slate-700">Email</label>
+          <input
+            id="login-email-input"
+            v-model="form.email"
+            type="email"
+            autocomplete="email"
+            class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+            placeholder="nama@email.com"
+          />
+          <p v-if="errors.email" class="mt-1 text-xs text-red-600">{{ errors.email }}</p>
+        </div>
 
-      <button
-        type="submit"
-        :disabled="authStore.isAuthLogin"
-        class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {{ authStore.isAuthLogin ? 'Memproses...' : 'Masuk' }}
-      </button>
-    </form>
+        <div>
+          <label for="login-password-input" class="block text-sm font-medium text-slate-700">Kata Sandi</label>
+          <input
+            id="login-password-input"
+            v-model="form.password"
+            type="password"
+            autocomplete="current-password"
+            class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+            placeholder="••••••••"
+          />
+          <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
+        </div>
 
-    <p class="mt-6 text-center text-sm text-slate-600">
-      Belum punya akun?
-      <RouterLink to="/register" class="font-semibold text-indigo-600 hover:underline">
-        Daftar sekarang
-      </RouterLink>
-    </p>
+        <div>
+          <button
+            id="login-submit-button"
+            type="submit"
+            :disabled="authStore.isAuthLogin"
+            class="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            {{ authStore.isAuthLogin ? 'Memproses...' : 'Masuk' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </AuthLayout>
 </template>

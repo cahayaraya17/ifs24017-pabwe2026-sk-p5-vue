@@ -48,8 +48,8 @@ describe('LoginPage.vue', () => {
 
   it('validasi form: mendeteksi format email tidak valid dan password kurang dari 6 karakter', async () => {
     const wrapper = createWrapper()
-    await wrapper.find('input#email').setValue('email-salah')
-    await wrapper.find('input#password').setValue('123')
+    await wrapper.find('#login-email-input').setValue('email-salah')
+    await wrapper.find('#login-password-input').setValue('123')
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(wrapper.text()).toContain('Format email tidak valid')
@@ -59,7 +59,7 @@ describe('LoginPage.vue', () => {
   it('menampilkan teks Memproses... saat isAuthLogin bernilai true', async () => {
     authStore.isAuthLogin = true
     const wrapper = createWrapper()
-    expect(wrapper.find('button[type="submit"]').text()).toBe('Memproses...')
+    expect(wrapper.find('#login-submit-button').text()).toBe('Memproses...')
   })
 
   it('submit sukses: memanggil login, dialog sukses, dan berpindah rute ke /', async () => {
@@ -69,8 +69,8 @@ describe('LoginPage.vue', () => {
       message: 'Login berhasil',
     })
 
-    await wrapper.find('input#email').setValue('user@delcom.org')
-    await wrapper.find('input#password').setValue('password123')
+    await wrapper.find('#login-email-input').setValue('user@delcom.org')
+    await wrapper.find('#login-password-input').setValue('password123')
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(authStore.login).toHaveBeenCalledWith({
@@ -88,8 +88,8 @@ describe('LoginPage.vue', () => {
       message: 'Kredensial tidak valid',
     })
 
-    await wrapper.find('input#email').setValue('user@delcom.org')
-    await wrapper.find('input#password').setValue('password123')
+    await wrapper.find('#login-email-input').setValue('user@delcom.org')
+    await wrapper.find('#login-password-input').setValue('password123')
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith('Kredensial tidak valid')
@@ -99,8 +99,8 @@ describe('LoginPage.vue', () => {
     const wrapper = createWrapper()
     vi.spyOn(authStore, 'login').mockRejectedValueOnce(new Error('Koneksi terputus'))
 
-    await wrapper.find('input#email').setValue('user@delcom.org')
-    await wrapper.find('input#password').setValue('password123')
+    await wrapper.find('#login-email-input').setValue('user@delcom.org')
+    await wrapper.find('#login-password-input').setValue('password123')
     await wrapper.find('form').trigger('submit.prevent')
 
     expect(toolsHelper.showErrorDialog).toHaveBeenCalledWith(
