@@ -192,7 +192,7 @@ async function handleAddSubmit(payload) {
   align-items: center;
 }
 .btn-primary {
-  background-color: #0284c7;
+  background-color: #0369a1;
   color: #fff;
   border: none;
   padding: 8px 16px;
@@ -257,7 +257,7 @@ async function handleAddSubmit(payload) {
   object-fit: cover;
 }
 .no-cover {
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.85rem;
 }
 .card-body {

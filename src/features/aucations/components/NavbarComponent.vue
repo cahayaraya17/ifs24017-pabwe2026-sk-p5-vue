@@ -52,14 +52,15 @@ function handleLogout() {
   color: #fff;
 }
 .btn-logout {
-  background-color: #ef4444;
-  color: #fff;
+  background-color: #b91c1c;
+  color: #ffffff;
   border: none;
   padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 500;
 }
 .btn-logout:hover {
-  background-color: #dc2626;
+  background-color: #991b1b;
 }
 </style>
